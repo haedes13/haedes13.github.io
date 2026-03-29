@@ -1,0 +1,1490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Jeffry Joseph — Security Researcher</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #060a0f;
+    --bg2: #0b1118;
+    --surface: #0f1923;
+    --surface2: #152231;
+    --accent: #00e5ff;
+    --accent2: #ff3c5c;
+    --accent3: #39ff88;
+    --text: #e2eaf3;
+    --muted: #617d96;
+    --border: rgba(0,229,255,0.12);
+    --mono: 'Share Tech Mono', monospace;
+    --head: 'Syne', sans-serif;
+    --body: 'DM Sans', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 16px;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  #cursor { position: fixed; width: 12px; height: 12px; background: var(--accent); border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); transition: transform 0.1s, background 0.2s; mix-blend-mode: screen; }
+  #cursor-ring { position: fixed; width: 36px; height: 36px; border: 1px solid var(--accent); border-radius: 50%; pointer-events: none; z-index: 9998; transform: translate(-50%,-50%); transition: all 0.18s ease; opacity: 0.5; }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 9990; opacity: 0.4;
+  }
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    pointer-events: none; z-index: 9989;
+  }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.2rem 4rem;
+    background: rgba(6,10,15,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo { font-family: var(--mono); color: var(--accent); font-size: 1rem; letter-spacing: 0.1em; }
+  .nav-logo span { color: var(--accent2); }
+  .nav-links { display: flex; gap: 2.5rem; }
+  .nav-links a { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); text-decoration: none; letter-spacing: 0.12em; text-transform: uppercase; transition: color 0.2s; position: relative; }
+  .nav-links a::after { content: ''; position: absolute; bottom: -3px; left: 0; width: 0; height: 1px; background: var(--accent); transition: width 0.3s; }
+  .nav-links a:hover { color: var(--accent); }
+  .nav-links a:hover::after { width: 100%; }
+
+  #hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 8rem 4rem 4rem; position: relative; overflow: hidden; }
+  .hero-grid-bg { position: absolute; inset: 0; background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px); background-size: 60px 60px; mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 100%); }
+  .hero-glow { position: absolute; top: 20%; left: 5%; width: 600px; height: 600px; background: radial-gradient(circle, rgba(0,229,255,0.06) 0%, transparent 70%); pointer-events: none; animation: pulse 4s ease-in-out infinite; }
+  .hero-glow2 { position: absolute; bottom: 10%; right: 5%; width: 400px; height: 400px; background: radial-gradient(circle, rgba(255,60,92,0.05) 0%, transparent 70%); pointer-events: none; animation: pulse 5s ease-in-out infinite 1s; }
+  @keyframes pulse { 0%,100%{opacity:0.6;transform:scale(1)} 50%{opacity:1;transform:scale(1.1)} }
+
+  .hero-label { font-family: var(--mono); font-size: 0.75rem; color: var(--accent); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 1.5rem; opacity: 0; animation: fadeUp 0.6s 0.2s forwards; }
+  .hero-name { font-family: var(--head); font-size: clamp(3.5rem, 8vw, 7rem); font-weight: 800; line-height: 0.95; letter-spacing: -0.02em; margin-bottom: 1rem; opacity: 0; animation: fadeUp 0.7s 0.4s forwards; }
+  .hero-name .accent { color: var(--accent); }
+  .hero-title { font-family: var(--mono); font-size: clamp(1rem, 2vw, 1.3rem); color: var(--muted); margin-bottom: 2rem; opacity: 0; animation: fadeUp 0.7s 0.6s forwards; }
+  .hero-desc { max-width: 600px; font-size: 1.05rem; color: #8aacbf; line-height: 1.8; margin-bottom: 3rem; opacity: 0; animation: fadeUp 0.7s 0.8s forwards; }
+  .hero-cta { display: flex; gap: 1.2rem; flex-wrap: wrap; opacity: 0; animation: fadeUp 0.7s 1s forwards; }
+  .btn { font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 0.85rem 2rem; text-decoration: none; border-radius: 2px; transition: all 0.25s; display: inline-flex; align-items: center; gap: 0.6rem; cursor: none; }
+  .btn-primary { background: var(--accent); color: #000; font-weight: 700; }
+  .btn-primary:hover { background: #fff; box-shadow: 0 0 30px rgba(0,229,255,0.4); transform: translateY(-2px); }
+  .btn-outline { border: 1px solid var(--accent); color: var(--accent); }
+  .btn-outline:hover { background: rgba(0,229,255,0.08); transform: translateY(-2px); box-shadow: 0 0 20px rgba(0,229,255,0.2); }
+  .hero-stats { position: absolute; right: 4rem; bottom: 4rem; display: flex; flex-direction: column; gap: 1.5rem; opacity: 0; animation: fadeUp 0.7s 1.2s forwards; }
+  .stat { text-align: right; }
+  .stat-num { font-family: var(--head); font-size: 2.2rem; font-weight: 800; color: var(--accent); line-height: 1; }
+  .stat-label { font-family: var(--mono); font-size: 0.68rem; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+
+  .ticker-wrap { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 0.6rem 0; overflow: hidden; }
+  .ticker { display: flex; gap: 0; white-space: nowrap; animation: tick 30s linear infinite; }
+  .ticker-item { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); padding: 0 2.5rem; }
+  .ticker-item span { color: var(--accent); margin-right: 0.5rem; }
+  @keyframes tick { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+  section { padding: 6rem 4rem; max-width: 1200px; margin: 0 auto; }
+  .section-header { margin-bottom: 4rem; }
+  .section-label { font-family: var(--mono); font-size: 0.72rem; color: var(--accent); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.8rem; }
+  .section-label::before { content:''; display:inline-block; width:30px; height:1px; background:var(--accent); }
+  .section-title { font-family: var(--head); font-size: clamp(2rem, 4vw, 3rem); font-weight: 800; line-height: 1.1; }
+  .section-title .hl { color: var(--accent); }
+
+  /* ABOUT */
+  #about { padding-top: 2rem; }
+  .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; }
+  .about-text p { color: #8aacbf; line-height: 1.9; margin-bottom: 1.2rem; }
+  .about-text p strong { color: var(--accent); font-weight: 500; }
+  .about-badges { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 2rem; }
+  .badge { font-family: var(--mono); font-size: 0.7rem; padding: 0.4rem 0.9rem; border: 1px solid var(--border); color: var(--muted); border-radius: 2px; transition: all 0.2s; }
+  .badge:hover { border-color: var(--accent); color: var(--accent); background: rgba(0,229,255,0.05); }
+
+  /* ══════════════════════════════════════════
+     INTERACTIVE TERMINAL CARD
+  ══════════════════════════════════════════ */
+  .terminal-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+    overflow: hidden; position: relative;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .terminal-card:hover { border-color: rgba(0,229,255,0.3); box-shadow: 0 0 30px rgba(0,229,255,0.06); }
+
+  /* Clickable hint badge */
+  .terminal-hint {
+    position: absolute; top: 0.55rem; right: 0.8rem;
+    font-family: var(--mono); font-size: 0.6rem; color: var(--accent3);
+    background: rgba(57,255,136,0.08); border: 1px solid rgba(57,255,136,0.2);
+    padding: 0.2rem 0.5rem; border-radius: 2px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    animation: hintPulse 2.5s ease-in-out infinite;
+    cursor: none;
+    user-select: none;
+  }
+  @keyframes hintPulse { 0%,100%{opacity:0.6} 50%{opacity:1} }
+
+  .terminal-top { background: var(--surface2); padding: 0.7rem 1rem; display: flex; align-items: center; gap: 0.5rem; cursor: none; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-r { background: #ff5f57; } .dot-y { background: #ffbd2e; } .dot-g { background: #28ca41; }
+  .terminal-title { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); margin-left: 0.5rem; }
+  .terminal-body { padding: 1.5rem; }
+  .terminal-line { font-family: var(--mono); font-size: 0.82rem; color: #8aacbf; margin-bottom: 0.5rem; line-height: 1.6; }
+  .terminal-line .prompt { color: var(--accent3); margin-right: 0.5rem; }
+  .terminal-line .cmd { color: var(--accent); }
+  .terminal-line .val { color: #e2eaf3; }
+  .terminal-line .comment { color: var(--muted); }
+  .blink { animation: blink 1s step-end infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  /* ══════════════════════════════════════════
+     TERMINAL PREVIEW CARD (about section)
+  ══════════════════════════════════════════ */
+  .tc-preview {
+    position: relative; overflow: hidden;
+    display: flex; flex-direction: column;
+    min-height: 360px;
+  }
+  .tc-preview .terminal-top {
+    display: flex; align-items: center; gap: 0.5rem;
+    background: #0d1e2e; padding: 0.72rem 1rem;
+    border-bottom: 1px solid rgba(0,229,255,0.1);
+    flex-shrink: 0;
+  }
+  .tc-esc-label {
+    margin-left: auto; font-family: var(--mono); font-size: 0.65rem;
+    color: #3a5060; border: 1px solid rgba(255,255,255,0.06);
+    padding: 0.18rem 0.55rem; border-radius: 3px; letter-spacing: 0.05em;
+    user-select: none;
+  }
+
+  /* central welcome body */
+  .tc-preview-body {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 1.1rem; padding: 1.8rem 1.4rem 1.2rem;
+    text-align: center;
+  }
+  .tc-lock-icon { font-size: 2.5rem; line-height: 1; }
+  .tc-shell-label {
+    font-family: var(--mono); font-size: 0.63rem;
+    color: var(--muted); letter-spacing: 0.2em; text-transform: uppercase;
+  }
+  .tc-divider {
+    width: 180px; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0,229,255,0.22), transparent);
+  }
+  .tc-main-msg {
+    font-family: var(--mono); font-size: 0.9rem;
+    color: var(--muted); line-height: 2;
+  }
+  .tc-cmd-green { color: var(--accent3); }
+  .tc-cmd-cyan  { color: var(--accent); }
+  .tc-name      { color: var(--text); font-size: 0.95rem; }
+  .tc-cursor {
+    display: inline-block; width: 9px; height: 1em;
+    background: var(--accent3); vertical-align: middle; margin-left: 4px;
+    animation: blink 1s step-end infinite; border-radius: 1px;
+  }
+  .tc-hint-row {
+    display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+    justify-content: center;
+  }
+  .tc-hint-cmd { font-family: var(--mono); font-size: 0.72rem; color: var(--accent); opacity: 0.7; }
+  .tc-hint-sep { font-family: var(--mono); font-size: 0.7rem; color: #2a3d50; }
+
+  /* fake input bar at bottom */
+  .tc-input-bar {
+    display: flex; align-items: center; gap: 0.7rem;
+    padding: 0.75rem 1.1rem;
+    border-top: 1px solid rgba(0,229,255,0.07);
+    background: rgba(0,0,0,0.15);
+    flex-shrink: 0;
+  }
+  .tc-ps1 { font-family: var(--mono); font-size: 0.8rem; color: var(--accent3); }
+  .tc-placeholder { font-family: var(--mono); font-size: 0.8rem; color: #2a3d50; }
+
+  /* hover overlay */
+  .tc-click-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,229,255,0.04);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.25s;
+    pointer-events: none;
+  }
+  .tc-preview:hover .tc-click-overlay { opacity: 1; }
+  .tc-click-text {
+    font-family: var(--mono); font-size: 0.72rem;
+    color: var(--accent3); letter-spacing: 0.15em; text-transform: uppercase;
+    background: rgba(6,10,15,0.75); border: 1px solid rgba(57,255,136,0.25);
+    padding: 0.45rem 1.1rem; border-radius: 2px;
+    animation: hintPulse 2s ease-in-out infinite;
+  }
+
+
+  .term-overlay {
+    position: fixed; inset: 0; z-index: 8000;
+    background: rgba(0,0,0,0.88);
+    backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .term-overlay.open { opacity: 1; pointer-events: all; }
+
+  .term-window {
+    width: min(820px, 96vw);
+    max-height: 88vh;
+    background: #07111a;
+    border: 1px solid rgba(0,229,255,0.22);
+    border-radius: 8px;
+    box-shadow: 0 0 60px rgba(0,229,255,0.08), 0 40px 80px rgba(0,0,0,0.7);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    transform: translateY(20px) scale(0.97);
+    transition: transform 0.3s ease;
+  }
+  .term-overlay.open .term-window { transform: translateY(0) scale(1); }
+
+  .term-win-bar {
+    background: #0d1e2e;
+    padding: 0.75rem 1.1rem;
+    display: flex; align-items: center; gap: 0.55rem;
+    border-bottom: 1px solid rgba(0,229,255,0.1);
+    flex-shrink: 0;
+  }
+  .term-win-dot { width: 11px; height: 11px; border-radius: 50%; cursor: none; }
+  .twd-r { background: #ff5f57; } .twd-y { background: #ffbd2e; } .twd-g { background: #28ca41; }
+  .term-win-title {
+    font-family: var(--mono); font-size: 0.72rem; color: var(--muted);
+    margin-left: 0.6rem; flex: 1; text-align: center; letter-spacing: 0.1em;
+  }
+  .term-close-btn {
+    font-family: var(--mono); font-size: 0.68rem; color: var(--muted);
+    background: none; border: 1px solid rgba(255,255,255,0.08);
+    padding: 0.2rem 0.6rem; border-radius: 2px; cursor: none;
+    transition: all 0.2s; letter-spacing: 0.05em;
+  }
+  .term-close-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  .term-output {
+    flex: 1; overflow-y: auto; padding: 1.4rem 1.6rem;
+    font-family: var(--mono); font-size: 0.83rem; line-height: 1.7;
+    scroll-behavior: smooth;
+  }
+  .term-output::-webkit-scrollbar { width: 4px; }
+  .term-output::-webkit-scrollbar-track { background: transparent; }
+  .term-output::-webkit-scrollbar-thumb { background: rgba(0,229,255,0.2); border-radius: 99px; }
+
+  .to-line { margin-bottom: 0.2rem; word-break: break-word; }
+  .to-prompt { color: var(--accent3); }
+  .to-cmd    { color: var(--accent); }
+  .to-key    { color: var(--accent); min-width: 170px; display: inline-block; }
+  .to-val    { color: #e2eaf3; }
+  .to-comment{ color: var(--muted); font-style: italic; }
+  .to-green  { color: var(--accent3); }
+  .to-red    { color: var(--accent2); }
+  .to-cyan   { color: var(--accent); }
+  .to-dim    { color: #445566; }
+  .to-banner { color: var(--accent); white-space: pre; line-height: 1.3; font-size: 0.72rem; }
+  .to-section{ color: var(--accent2); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; margin: 0.8rem 0 0.3rem; }
+  .to-bar    { color: rgba(0,229,255,0.2); }
+  .to-err    { color: var(--accent2); }
+  .to-hint   { color: var(--muted); font-size: 0.75rem; }
+  .to-help-cmd { color: var(--accent3); }
+
+  .term-input-row {
+    display: flex; align-items: center; gap: 0.6rem;
+    padding: 0.85rem 1.6rem;
+    border-top: 1px solid rgba(0,229,255,0.08);
+    background: rgba(0,0,0,0.2);
+    flex-shrink: 0;
+  }
+  .term-ps1 { font-family: var(--mono); font-size: 0.83rem; color: var(--accent3); white-space: nowrap; user-select: none; }
+  .term-input {
+    flex: 1; background: none; border: none; outline: none;
+    font-family: var(--mono); font-size: 0.83rem; color: var(--text);
+    caret-color: var(--accent);
+    cursor: none;
+  }
+
+  /* typewriter effect for output lines */
+  @keyframes typeIn { from{opacity:0;transform:translateX(-4px)} to{opacity:1;transform:translateX(0)} }
+  .to-animate { animation: typeIn 0.12s ease forwards; }
+
+  /* EXPERIENCE */
+  #experience { border-top: 1px solid var(--border); }
+  .exp-list { display: flex; flex-direction: column; gap: 1.5rem; }
+  .exp-card { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 2rem 2.5rem; position: relative; overflow: hidden; transition: border-color 0.3s, transform 0.3s; }
+  .exp-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--accent); transform: scaleY(0); transform-origin: bottom; transition: transform 0.3s; }
+  .exp-card:hover { border-color: rgba(0,229,255,0.3); transform: translateX(4px); }
+  .exp-card:hover::before { transform: scaleY(1); }
+  .exp-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem; }
+  .exp-role { font-family: var(--head); font-size: 1.15rem; font-weight: 700; }
+  .exp-company { font-family: var(--mono); font-size: 0.8rem; color: var(--accent); margin-top: 0.2rem; }
+  .exp-date { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); border: 1px solid var(--border); padding: 0.3rem 0.8rem; border-radius: 2px; white-space: nowrap; }
+  .exp-bullets { list-style: none; margin-top: 1rem; }
+  .exp-bullets li { font-size: 0.9rem; color: #8aacbf; padding: 0.35rem 0; padding-left: 1.2rem; position: relative; line-height: 1.6; }
+  .exp-bullets li::before { content: '▸'; position: absolute; left: 0; color: var(--accent); font-size: 0.7rem; top: 0.45rem; }
+
+  /* PROJECTS */
+  #projects { border-top: 1px solid var(--border); }
+  .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.5rem; }
+  .project-card { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 2rem; position: relative; overflow: hidden; transition: all 0.3s; display: flex; flex-direction: column; gap: 1rem; }
+  .project-card::after { content:''; position:absolute; inset:0; background: linear-gradient(135deg, rgba(0,229,255,0.04) 0%, transparent 60%); opacity:0; transition:opacity 0.3s; }
+  .project-card:hover { border-color: rgba(0,229,255,0.3); transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+  .project-card:hover::after { opacity: 1; }
+  .project-tag { display: inline-flex; align-items: center; gap: 0.4rem; font-family: var(--mono); font-size: 0.68rem; padding: 0.3rem 0.7rem; border-radius: 2px; letter-spacing: 0.1em; text-transform: uppercase; width: fit-content; }
+  .tag-red { background: rgba(255,60,92,0.12); color: var(--accent2); border: 1px solid rgba(255,60,92,0.2); }
+  .tag-blue { background: rgba(0,229,255,0.08); color: var(--accent); border: 1px solid rgba(0,229,255,0.15); }
+  .tag-green { background: rgba(57,255,136,0.08); color: var(--accent3); border: 1px solid rgba(57,255,136,0.15); }
+  .project-title { font-family: var(--head); font-size: 1.1rem; font-weight: 700; }
+  .project-date { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); }
+  .project-desc { font-size: 0.88rem; color: #8aacbf; line-height: 1.75; }
+  .project-tools { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
+  .tool-chip { font-family: var(--mono); font-size: 0.68rem; padding: 0.25rem 0.6rem; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 2px; color: var(--muted); }
+
+  /* SKILLS */
+  #skills { border-top: 1px solid var(--border); }
+  .skills-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
+  .skill-group { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 1.8rem; transition: border-color 0.3s; }
+  .skill-group:hover { border-color: rgba(0,229,255,0.25); }
+  .skill-group-title { font-family: var(--mono); font-size: 0.72rem; color: var(--accent); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.6rem; }
+  .skill-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .skill-tag { font-family: var(--mono); font-size: 0.72rem; padding: 0.3rem 0.65rem; border: 1px solid var(--border); color: #8aacbf; border-radius: 2px; transition: all 0.2s; }
+  .skill-tag:hover { border-color: var(--accent); color: var(--accent); background: rgba(0,229,255,0.05); cursor: default; }
+
+  /* EDUCATION */
+  #education { border-top: 1px solid var(--border); }
+  .edu-cert-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; }
+  .edu-item { margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
+  .edu-item:last-child { border-bottom: none; }
+  .edu-degree { font-family: var(--head); font-size: 1rem; font-weight: 700; margin-bottom: 0.3rem; }
+  .edu-school { font-family: var(--mono); font-size: 0.78rem; color: var(--accent); margin-bottom: 0.3rem; }
+  .edu-date { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); }
+  .cert-list { display: flex; flex-direction: column; gap: 0.8rem; }
+  .cert-item { display: flex; align-items: center; gap: 0.8rem; padding: 0.9rem 1.2rem; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; transition: all 0.2s; }
+  .cert-item:hover { border-color: rgba(0,229,255,0.25); }
+  .cert-icon { font-size: 1.1rem; }
+  .cert-name { font-family: var(--mono); font-size: 0.8rem; color: var(--text); }
+
+  /* CONTACT */
+  #contact { border-top: 1px solid var(--border); max-width: 1200px; }
+  .contact-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+  .contact-tagline { font-family: var(--head); font-size: clamp(1.8rem, 3vw, 2.5rem); font-weight: 800; line-height: 1.2; margin-bottom: 1.5rem; }
+  .contact-tagline .hl { color: var(--accent); }
+  .contact-desc { color: #8aacbf; line-height: 1.8; margin-bottom: 2rem; }
+  .contact-links { display: flex; flex-direction: column; gap: 1rem; }
+  .contact-link { display: flex; align-items: center; gap: 1rem; padding: 1.2rem 1.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; text-decoration: none; transition: all 0.25s; }
+  .contact-link:hover { border-color: var(--accent); transform: translateX(6px); background: rgba(0,229,255,0.04); }
+  .contact-link-icon { font-size: 1.2rem; flex-shrink: 0; }
+  .contact-link-label { font-family: var(--mono); font-size: 0.8rem; color: var(--muted); }
+  .contact-link-value { font-family: var(--mono); font-size: 0.85rem; color: var(--text); }
+  .linkedin-svg-wrap { width: 22px; height: 22px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+
+  .security-ring { position: relative; width: 300px; height: 300px; margin: 0 auto; }
+  .ring-svg { width: 100%; height: 100%; animation: spin 20s linear infinite; }
+  .ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .ring-icon { font-size: 3rem; }
+  .ring-text { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); text-align: center; margin-top: 0.5rem; }
+  @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+
+  footer { border-top: 1px solid var(--border); padding: 2rem 4rem; text-align: center; font-family: var(--mono); font-size: 0.72rem; color: var(--muted); }
+  footer span { color: var(--accent); }
+
+  .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 99px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+  /* ══════════════════════════════════════════
+     CTF CONTACT SECTION
+  ══════════════════════════════════════════ */
+  .ctf-wrap {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 4rem; align-items: center;
+  }
+  .ctf-tagline {
+    font-family: var(--head); font-size: clamp(1.8rem, 3vw, 2.6rem);
+    font-weight: 800; line-height: 1.15; margin-bottom: 1.2rem;
+  }
+  .ctf-hl { color: var(--accent2); }
+  .ctf-hl-sm { color: var(--accent3); font-style: normal; }
+  .ctf-desc { color: #8aacbf; line-height: 1.85; margin-bottom: 1.5rem; font-size: 0.95rem; }
+
+  .ctf-badge-row { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 1.8rem; }
+  .ctf-badge {
+    font-family: var(--mono); font-size: 0.68rem; padding: 0.3rem 0.75rem;
+    border: 1px solid var(--border); color: var(--muted); border-radius: 2px;
+    letter-spacing: 0.06em;
+  }
+
+  .ctf-hints { display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 2rem; }
+  .ctf-hint-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-left: 3px solid var(--accent2);
+    border-radius: 4px; padding: 1rem 1.2rem;
+    transition: border-color 0.25s;
+  }
+  .ctf-hint-card:hover { border-color: rgba(255,60,92,0.4); }
+  .ctf-hint-label { font-family: var(--mono); font-size: 0.65rem; color: var(--accent2); letter-spacing: 0.15em; margin-bottom: 0.4rem; }
+  .ctf-hint-text { font-family: var(--mono); font-size: 0.78rem; color: #8aacbf; line-height: 1.7; }
+  kbd { background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.2); border-radius: 3px; padding: 0.05rem 0.4rem; font-family: var(--mono); font-size: 0.72rem; color: var(--accent); }
+
+  .ctf-form { margin-top: 0.5rem; }
+  .ctf-form-label { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.7rem; }
+  .ctf-input-row { display: flex; align-items: center; gap: 0; flex-wrap: wrap; gap: 0.5rem; }
+  .ctf-prompt { font-family: var(--mono); font-size: 0.85rem; color: var(--accent3); flex-shrink: 0; }
+  .ctf-field {
+    flex: 1; min-width: 150px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 2px; padding: 0.6rem 0.8rem;
+    font-family: var(--mono); font-size: 0.82rem; color: var(--text);
+    outline: none; caret-color: var(--accent3);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    cursor: auto;
+  }
+  .ctf-field:focus { border-color: rgba(0,229,255,0.4); box-shadow: 0 0 12px rgba(0,229,255,0.08); }
+  .ctf-submit {
+    font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.12em;
+    padding: 0.65rem 1.4rem; background: var(--accent2); color: #fff;
+    border: none; border-radius: 2px; cursor: none;
+    transition: all 0.2s; font-weight: 700; flex-shrink: 0;
+  }
+  .ctf-submit:hover { background: #ff6080; box-shadow: 0 0 20px rgba(255,60,92,0.35); transform: translateY(-1px); }
+  .ctf-feedback {
+    margin-top: 0.7rem; font-family: var(--mono); font-size: 0.78rem;
+    min-height: 1.4rem; transition: all 0.3s;
+  }
+  .ctf-feedback.err  { color: var(--accent2); }
+  .ctf-feedback.ok   { color: var(--accent3); }
+
+  /* lock visual */
+  .ctf-right { display: flex; align-items: center; justify-content: center; }
+  .ctf-lock-visual { position: relative; width: 260px; height: 260px; }
+  .ctf-lock-ring { position: absolute; inset: 0; }
+  .ctf-lock-center {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 0.3rem;
+  }
+  .ctf-lock-icon { font-size: 3rem; transition: all 0.5s; }
+  .ctf-lock-status {
+    font-family: var(--mono); font-size: 0.72rem;
+    color: var(--accent2); letter-spacing: 0.2em; text-transform: uppercase;
+  }
+  .ctf-lock-sub { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); letter-spacing: 0.12em; }
+
+  /* success banner */
+  .ctf-success-banner {
+    display: flex; align-items: center; gap: 1rem;
+    background: rgba(57,255,136,0.07); border: 1px solid rgba(57,255,136,0.25);
+    border-radius: 4px; padding: 1rem 1.4rem;
+    animation: fadeUp 0.5s ease forwards;
+  }
+  .ctf-success-icon { font-size: 1.8rem; flex-shrink: 0; }
+  .ctf-success-title { font-family: var(--head); font-size: 1rem; font-weight: 700; color: var(--accent3); margin-bottom: 0.2rem; }
+  .ctf-success-sub { font-family: var(--mono); font-size: 0.75rem; color: #8aacbf; }
+
+  /* unlock animation */
+  @keyframes unlockBounce { 0%{transform:scale(1)} 40%{transform:scale(1.3)} 70%{transform:scale(0.95)} 100%{transform:scale(1)} }
+  .unlock-anim { animation: unlockBounce 0.6s ease forwards; }
+
+  /* shake on wrong */
+  @keyframes ctfShake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-6px)} 40%,80%{transform:translateX(6px)} }
+  .ctf-shake { animation: ctfShake 0.4s ease; }
+
+  @media (max-width: 768px) {
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { gap: 1.2rem; }
+    section { padding: 4rem 1.5rem; }
+    #hero { padding: 6rem 1.5rem 3rem; }
+    .about-grid, .contact-inner, .edu-cert-grid { grid-template-columns: 1fr; }
+    .hero-stats { position: static; flex-direction: row; margin-top: 3rem; }
+    .stat { text-align: left; }
+    .term-window { max-height: 95vh; }
+    .to-banner { font-size: 0.55rem; }
+  }
+
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- ══════════════════════════════════════════
+     INTERACTIVE TERMINAL MODAL
+══════════════════════════════════════════ -->
+<div class="term-overlay" id="termOverlay" role="dialog" aria-modal="true" aria-label="Interactive Terminal">
+  <div class="term-window" id="termWindow">
+    <div class="term-win-bar">
+      <div class="term-win-dot twd-r" id="termCloseBtn" title="Close"></div>
+      <div class="term-win-dot twd-y"></div>
+      <div class="term-win-dot twd-g"></div>
+      <span class="term-win-title">jeffry@kali — bash — 80×24</span>
+      <button class="term-close-btn" id="termCloseBtnText">ESC / close</button>
+    </div>
+    <div class="term-output" id="termOutput"></div>
+    <div class="term-input-row">
+      <span class="term-ps1">jeffry@kali:~$</span>
+      <input class="term-input" id="termInput" type="text" autocomplete="off" spellcheck="false" placeholder="type a command…" aria-label="Terminal input"/>
+    </div>
+  </div>
+</div>
+
+<nav>
+  <div class="nav-logo"><span>&gt;</span> jeffry@sec<span>_</span></div>
+  <div class="nav-links">
+    <a href="#about">About</a>
+    <a href="#experience">Experience</a>
+    <a href="#projects">Projects</a>
+    <a href="#skills">Skills</a>
+    <a href="#contact">Contact</a>
+  </div>
+</nav>
+
+<section id="hero" style="max-width:100%; padding-left:4rem;">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-glow2"></div>
+  <div class="hero-label">// Security Researcher &amp; VAPT Specialist</div>
+  <h1 class="hero-name">JEFFRY<br/><span class="accent">JOSEPH</span></h1>
+  <div class="hero-title">MSc Cybersecurity &nbsp;|&nbsp; Red &amp; Blue Team &nbsp;|&nbsp; ITIL V4</div>
+  <p class="hero-desc">Cybersecurity professional with 3+ years bridging IT service management and offensive security — hunting vulnerabilities, fortifying pipelines, and building tools that defend the digital frontier.</p>
+  <div class="hero-cta">
+    <a href="#projects" class="btn btn-primary">▸ View Projects</a>
+    <a href="#contact" class="btn btn-outline">⌗ Get In Touch</a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-num">3+</div><div class="stat-label">Years Experience</div></div>
+    <div class="stat"><div class="stat-num">4+</div><div class="stat-label">Projects Built</div></div>
+    <div class="stat"><div class="stat-num">7+</div><div class="stat-label">Vulns Found</div></div>
+  </div>
+</section>
+
+<div class="ticker-wrap">
+  <div class="ticker">
+    <div class="ticker-item"><span>◈</span> VAPT Specialist</div>
+    <div class="ticker-item"><span>◈</span> Burp Suite</div>
+    <div class="ticker-item"><span>◈</span> OWASP Top 10</div>
+    <div class="ticker-item"><span>◈</span> Metasploit</div>
+    <div class="ticker-item"><span>◈</span> Digital Forensics</div>
+    <div class="ticker-item"><span>◈</span> DevSecOps</div>
+    <div class="ticker-item"><span>◈</span> ITIL V4 Certified</div>
+    <div class="ticker-item"><span>◈</span> ISO 27001</div>
+    <div class="ticker-item"><span>◈</span> Incident Response</div>
+    <div class="ticker-item"><span>◈</span> Wazuh SIEM</div>
+    <div class="ticker-item"><span>◈</span> OSINT</div>
+    <div class="ticker-item"><span>◈</span> Red Teaming</div>
+    <div class="ticker-item"><span>◈</span> VAPT Specialist</div>
+    <div class="ticker-item"><span>◈</span> Burp Suite</div>
+    <div class="ticker-item"><span>◈</span> OWASP Top 10</div>
+    <div class="ticker-item"><span>◈</span> Metasploit</div>
+    <div class="ticker-item"><span>◈</span> Digital Forensics</div>
+    <div class="ticker-item"><span>◈</span> DevSecOps</div>
+    <div class="ticker-item"><span>◈</span> ITIL V4 Certified</div>
+    <div class="ticker-item"><span>◈</span> ISO 27001</div>
+    <div class="ticker-item"><span>◈</span> Incident Response</div>
+    <div class="ticker-item"><span>◈</span> Wazuh SIEM</div>
+    <div class="ticker-item"><span>◈</span> OSINT</div>
+    <div class="ticker-item"><span>◈</span> Red Teaming</div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="section-header reveal">
+    <div class="section-label">01 / about</div>
+    <h2 class="section-title">Who I <span class="hl">Am</span></h2>
+  </div>
+  <div class="about-grid">
+    <div class="about-text reveal">
+      <p>I'm a <strong>Cybersecurity professional</strong> with an MSc in Cybersecurity and 3+ years of hands-on experience across IT service management, incident response, and application operations.</p>
+      <p>I operate across both sides of the security spectrum — <strong>Red Team</strong> (VAPT, OWASP Top 10, Metasploit, hardware attack research) and <strong>Blue Team</strong> (SIEM, digital forensics, DevSecOps automation) — bringing a holistic, attacker-minded approach to defence.</p>
+      <p>I've conducted authorised VAPT engagements uncovering critical vulnerabilities including backdoors, DoS attacks, CORS misconfigurations, and exposed API endpoints. I hold <strong>ITIL V4</strong> certification and am familiar with <strong>ISO 27001</strong> and <strong>NIST</strong> frameworks.</p>
+      <p>Based in <strong>Kochi, Kerala, India</strong>. Languages: English, Hindi, Malayalam.</p>
+      <div class="about-badges">
+        <span class="badge">ITIL V4</span><span class="badge">ISO 27001</span><span class="badge">NIST</span>
+        <span class="badge">OWASP Top 10</span><span class="badge">MSc Cybersecurity</span>
+        <span class="badge">NSS Volunteer</span><span class="badge">UGC-NET Qualified</span>
+      </div>
+    </div>
+
+    <!-- CLICKABLE TERMINAL CARD — matches welcome screen style -->
+    <div class="terminal-card reveal tc-preview" id="termTrigger" title="Click to open interactive terminal" style="cursor:none;">
+      <!-- title bar -->
+      <div class="terminal-top">
+        <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+        <span class="terminal-title">jeffry@kali — bash — 80×24</span>
+        <span class="tc-esc-label">ESC / close</span>
+      </div>
+
+      <!-- welcome body — mirrors the popup welcome screen exactly -->
+      <div class="tc-preview-body">
+        <div class="tc-lock-icon">🔒</div>
+        <div class="tc-shell-label">JEFFRY@KALI — INTERACTIVE SHELL</div>
+        <div class="tc-divider"></div>
+
+        <div class="tc-main-msg">
+          Type &nbsp;<span class="tc-cmd-green">whoami</span>&nbsp; or run an &nbsp;<span class="tc-cmd-cyan">nmap</span>&nbsp; scan<br/>
+          to know about &nbsp;<span class="tc-name">Jeffry Joseph</span><span class="tc-cursor"></span>
+        </div>
+
+        <div class="tc-divider"></div>
+
+        <div class="tc-hint-row">
+          <span class="tc-hint-cmd">whoami</span>
+          <span class="tc-hint-sep">·</span>
+          <span class="tc-hint-cmd">nmap jeffry</span>
+          <span class="tc-hint-sep">·</span>
+          <span class="tc-hint-cmd">cat profile.json</span>
+          <span class="tc-hint-sep">·</span>
+          <span class="tc-hint-cmd">help</span>
+        </div>
+      </div>
+
+      <!-- fake input bar -->
+      <div class="tc-input-bar">
+        <span class="tc-ps1">jeffry@kali:~$</span>
+        <span class="tc-placeholder">type a command…</span>
+      </div>
+
+      <!-- click ripple overlay -->
+      <div class="tc-click-overlay">
+        <span class="tc-click-text">▶ &nbsp;click to interact</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section id="experience">
+  <div class="section-header reveal">
+    <div class="section-label">02 / experience</div>
+    <h2 class="section-title">Professional <span class="hl">Journey</span></h2>
+  </div>
+  <div class="exp-list">
+    <div class="exp-card reveal">
+      <div class="exp-header">
+        <div>
+          <div class="exp-role">Volunteer Security Assessment</div>
+          <div class="exp-company">DISPROTECH — Independent Security Engagement</div>
+        </div>
+        <div class="exp-date">Jan 2026 – Present</div>
+      </div>
+      <ul class="exp-bullets">
+        <li><strong>Scope &amp; Findings:</strong> Conducted authorised end-to-end VAPT on a production web application; identified 4 backdoor vulnerabilities, a DoS vulnerability, CORS misconfiguration, and multiple exposed API endpoints.</li>
+        <li><strong>Reporting:</strong> Produced a structured vulnerability report with severity ratings, business impact analysis, and remediation recommendations.</li>
+        <li><strong>Tools Used:</strong> Burp Suite, Nmap, Nuclei, Sublist3r, and full VAPT methodology.</li>
+      </ul>
+    </div>
+    <div class="exp-card reveal">
+      <div class="exp-header">
+        <div>
+          <div class="exp-role">Junior Technical Support Specialist</div>
+          <div class="exp-company">Quilt (Reliable Support Systems LLC)</div>
+        </div>
+        <div class="exp-date">Apr 2025 – Nov 2025</div>
+      </div>
+      <ul class="exp-bullets">
+        <li><strong>Incident Triage &amp; Documentation:</strong> Triaged and documented support cases end-to-end in Salesforce, maintaining detailed logs and shift reports mirroring L1 SOC responsibilities.</li>
+        <li><strong>Escalation &amp; SOP Adherence:</strong> Identified escalation needs and provided on-call support for three POS software systems following established SOPs.</li>
+        <li><strong>System Troubleshooting:</strong> Diagnosed and resolved Windows OS errors, software crashes, and peripheral device issues using structured root-cause analysis.</li>
+      </ul>
+    </div>
+    <div class="exp-card reveal">
+      <div class="exp-header">
+        <div>
+          <div class="exp-role">Associate Product Support Advisor</div>
+          <div class="exp-company">IQVIA</div>
+        </div>
+        <div class="exp-date">Nov 2020 – Jun 2023</div>
+      </div>
+      <ul class="exp-bullets">
+        <li><strong>Incident &amp; Change Management:</strong> Managed end-to-end Incident, Request, and Change workflows in ServiceNow under ITIL V4 with consistent SLA compliance.</li>
+        <li><strong>Reporting &amp; Stakeholder Communication:</strong> Prepared detailed incident reports, escalation documentation, and status updates — building strong audit-trail and risk communication skills.</li>
+        <li><strong>Infrastructure &amp; ETL Operations:</strong> Administered WebLogic cluster environments (DEV–PROD); monitored and resolved ETL pipeline failures using AB and Informatica PowerCenter; executed SQL via SQLPlus and SQLDeveloper.</li>
+        <li><strong>Deployment &amp; CI/CD:</strong> Executed application deployment workflows via GitLab across multiple environment stages.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="section-header reveal">
+    <div class="section-label">03 / projects</div>
+    <h2 class="section-title">What I've <span class="hl">Built</span></h2>
+  </div>
+  <div class="projects-grid">
+    <div class="project-card reveal">
+      <div class="project-tag tag-blue">🔵 Blue Team</div>
+      <div>
+        <div class="project-title">Buskill Inspired Laptop Anti-Theft &amp; Encryption System</div>
+        <div class="project-date">Jul 2025 – Aug 2025</div>
+      </div>
+      <p class="project-desc">Python-based USB kill-cord system with AES-256-GCM encryption, watchdog persistence, Task Manager protection, and Windows API integration to protect data on physical compromise.</p>
+      <div class="project-tools"><span class="tool-chip">Python</span><span class="tool-chip">AES-256-GCM</span><span class="tool-chip">Windows API</span><span class="tool-chip">Endpoint Security</span></div>
+    </div>
+    <div class="project-card reveal">
+      <div class="project-tag tag-blue">🔵 Blue Team</div>
+      <div>
+        <div class="project-title">Automated DevSecOps Security Suite for CI/CD Pipeline</div>
+        <div class="project-date">Feb 2025 – May 2025</div>
+      </div>
+      <p class="project-desc">Integrated SAST, DAST, SCA, Secret-Scanning, Port Scanning, and SSL Checks into Jenkins with vulnerability management via DefectDojo; centralised into a real-time security dashboard.</p>
+      <div class="project-tools"><span class="tool-chip">Jenkins</span><span class="tool-chip">SAST/DAST</span><span class="tool-chip">DefectDojo</span><span class="tool-chip">GitLab</span><span class="tool-chip">SCA</span></div>
+    </div>
+    <div class="project-card reveal">
+      <div class="project-tag tag-green">🟢 AI / ML</div>
+      <div>
+        <div class="project-title">Sexual Predator Classification Model</div>
+        <div class="project-date">Feb 2025 – May 2025</div>
+      </div>
+      <p class="project-desc">ML model using Naive Bayes, Random Forest, Decision Tree, and SVM algorithms to identify and classify online threats — demonstrating analytical approach to threat pattern recognition.</p>
+      <div class="project-tools"><span class="tool-chip">Naive Bayes</span><span class="tool-chip">Random Forest</span><span class="tool-chip">SVM</span><span class="tool-chip">Python</span><span class="tool-chip">Trust Safety</span></div>
+    </div>
+    <div class="project-card reveal">
+      <div class="project-tag tag-red">🔴 Red Team</div>
+      <div>
+        <div class="project-title">Flipper Zero Alternative</div>
+        <div class="project-date">Jun 2024 – Dec 2024</div>
+      </div>
+      <p class="project-desc">Hardware attack research tool built on M5StickCPlus 2 + Bruce Firmware with NFC, NRF, and CC1101 modules to test Wi-Fi, Bluetooth, NFC, and RF attack vectors in authorised environments.</p>
+      <div class="project-tools"><span class="tool-chip">M5StickCPlus 2</span><span class="tool-chip">Bruce Firmware</span><span class="tool-chip">NFC</span><span class="tool-chip">RF</span><span class="tool-chip">Hardware</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section id="skills">
+  <div class="section-header reveal">
+    <div class="section-label">04 / skills</div>
+    <h2 class="section-title">Technical <span class="hl">Arsenal</span></h2>
+  </div>
+  <div class="skills-grid">
+    <div class="skill-group reveal">
+      <div class="skill-group-title"><span class="icon">⚔️</span> VAPT &amp; Testing</div>
+      <div class="skill-tags"><span class="skill-tag">VAPT</span><span class="skill-tag">Burp Suite</span><span class="skill-tag">Nmap</span><span class="skill-tag">Wireshark</span><span class="skill-tag">OWASP Top 10</span><span class="skill-tag">OWASP ZAP</span><span class="skill-tag">Metasploit</span><span class="skill-tag">SQLMAP</span><span class="skill-tag">Red Teaming</span></div>
+    </div>
+    <div class="skill-group reveal">
+      <div class="skill-group-title"><span class="icon">🛡️</span> Security Monitoring</div>
+      <div class="skill-tags"><span class="skill-tag">Wazuh</span><span class="skill-tag">Rule Creation</span><span class="skill-tag">Malware Analysis</span><span class="skill-tag">Incident Response</span><span class="skill-tag">Root Cause Analysis</span><span class="skill-tag">Alert Triage</span><span class="skill-tag">EDR</span></div>
+    </div>
+    <div class="skill-group reveal">
+      <div class="skill-group-title"><span class="icon">🔍</span> OSINT &amp; Forensics</div>
+      <div class="skill-tags"><span class="skill-tag">OSINT Tools</span><span class="skill-tag">Spiderfoot</span><span class="skill-tag">Maltego</span><span class="skill-tag">Autopsy</span><span class="skill-tag">Encase</span><span class="skill-tag">Magnet Axiom</span><span class="skill-tag">Flare VM</span><span class="skill-tag">Dark Web</span></div>
+    </div>
+    <div class="skill-group reveal">
+      <div class="skill-group-title"><span class="icon">⚙️</span> DevSecOps &amp; Automation</div>
+      <div class="skill-tags"><span class="skill-tag">Jenkins</span><span class="skill-tag">SAST &amp; DAST</span><span class="skill-tag">Python</span><span class="skill-tag">GitLab</span><span class="skill-tag">DefectDojo</span><span class="skill-tag">SCA</span><span class="skill-tag">DevSecOps</span></div>
+    </div>
+    <div class="skill-group reveal">
+      <div class="skill-group-title"><span class="icon">🖥️</span> IT Operations</div>
+      <div class="skill-tags"><span class="skill-tag">Salesforce</span><span class="skill-tag">ServiceNow</span><span class="skill-tag">WebLogic</span><span class="skill-tag">Informatica PowerCenter</span><span class="skill-tag">ETL</span><span class="skill-tag">SQL</span><span class="skill-tag">ITSM</span><span class="skill-tag">SLA Management</span></div>
+    </div>
+    <div class="skill-group reveal">
+      <div class="skill-group-title"><span class="icon">📋</span> Frameworks &amp; OS</div>
+      <div class="skill-tags"><span class="skill-tag">ISO 27001</span><span class="skill-tag">NIST</span><span class="skill-tag">ITIL V4</span><span class="skill-tag">Windows</span><span class="skill-tag">Linux</span><span class="skill-tag">Kali Linux</span><span class="skill-tag">Active Directory</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- EDUCATION -->
+<section id="education">
+  <div class="section-header reveal">
+    <div class="section-label">05 / education &amp; certs</div>
+    <h2 class="section-title">Academic <span class="hl">Background</span></h2>
+  </div>
+  <div class="edu-cert-grid">
+    <div class="reveal">
+      <div class="edu-item">
+        <div class="edu-degree">Master of Science in Cybersecurity</div>
+        <div class="edu-school">National Forensic Sciences University, Gujarat</div>
+        <div class="edu-date">Aug 2023 – May 2025</div>
+      </div>
+      <div class="edu-item">
+        <div class="edu-degree">Bachelor of Science in Cybersecurity</div>
+        <div class="edu-school">Sacred Heart College, Kochi, Kerala</div>
+        <div class="edu-date">Jun 2017 – Aug 2020</div>
+      </div>
+    </div>
+    <div class="cert-list reveal">
+      <div class="cert-item"><span class="cert-icon">🏅</span><span class="cert-name">ITIL V4 Foundation</span></div>
+      <div class="cert-item"><span class="cert-icon">🤖</span><span class="cert-name">Fundamentals of Deep Learning</span></div>
+      <div class="cert-item"><span class="cert-icon">🐍</span><span class="cert-name">Learning Python 101 For Data Science</span></div>
+      <div class="cert-item"><span class="cert-icon">🎓</span><span class="cert-name">UGC-NET Qualified (PhD Only)</span></div>
+      <div class="cert-item"><span class="cert-icon">🌱</span><span class="cert-name">National Service Scheme Volunteer</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     CTF FLAG — hidden in source for the puzzle
+     flag{s0urc3_c0d3_1s_y0ur_fr13nd}
+══════════════════════════════════════════ -->
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="section-header reveal">
+    <div class="section-label">06 / contact</div>
+    <h2 class="section-title">Let's <span class="hl">Connect</span></h2>
+  </div>
+
+  <!-- CTF LOCKED STATE -->
+  <div id="ctf-locked" class="ctf-wrap reveal">
+    <div class="ctf-left">
+      <div class="ctf-tagline">
+        Want to connect?<br/>
+        <span class="ctf-hl">Hack into the site</span><br/>
+        and get my contact info.
+      </div>
+      <p class="ctf-desc">
+        My contact details are locked behind a simple security challenge.
+        No tools, no downloads — just your browser and a hacker's curiosity.
+        Think you can crack it?
+      </p>
+      <div class="ctf-badge-row">
+        <span class="ctf-badge">🧩 Beginner Friendly</span>
+        <span class="ctf-badge">🌐 Browser Only</span>
+        <span class="ctf-badge">⚡ 2 min challenge</span>
+      </div>
+
+      <!-- HINT CARDS -->
+      <div class="ctf-hints">
+        <div class="ctf-hint-card" id="hint1">
+          <div class="ctf-hint-label">// HINT 01</div>
+          <div class="ctf-hint-text">Every webpage has a skeleton beneath its surface. Developers sometimes leave notes there. Right-click anywhere and look for <span class="ctf-hl-sm">View Page Source</span>.</div>
+        </div>
+        <div class="ctf-hint-card" id="hint2">
+          <div class="ctf-hint-label">// HINT 02</div>
+          <div class="ctf-hint-text">Once you're in the source, search for the word <span class="ctf-hl-sm">flag</span> using <kbd>Ctrl+F</kbd> (or <kbd>Cmd+F</kbd> on Mac). The flag looks like: <span class="ctf-hl-sm">flag{...}</span></div>
+        </div>
+      </div>
+
+      <!-- FLAG INPUT -->
+      <div class="ctf-form">
+        <div class="ctf-form-label">// ENTER FLAG TO UNLOCK CONTACT</div>
+        <div class="ctf-input-row">
+          <span class="ctf-prompt">flag{</span>
+          <input id="ctf-input" class="ctf-field" type="text" placeholder="your_flag_here" autocomplete="off" spellcheck="false"/>
+          <span class="ctf-prompt">}</span>
+          <button class="ctf-submit" id="ctf-submit">CRACK IT</button>
+        </div>
+        <div class="ctf-feedback" id="ctf-feedback"></div>
+      </div>
+    </div>
+
+    <div class="ctf-right">
+      <div class="ctf-lock-visual">
+        <div class="ctf-lock-ring">
+          <svg viewBox="0 0 260 260" xmlns="http://www.w3.org/2000/svg" width="260" height="260">
+            <!-- spinning outer ring -->
+            <circle cx="130" cy="130" r="120" fill="none" stroke="rgba(255,60,92,0.15)" stroke-width="1"/>
+            <circle cx="130" cy="130" r="120" fill="none" stroke="rgba(255,60,92,0.5)" stroke-width="1" stroke-dasharray="6 14">
+              <animateTransform attributeName="transform" type="rotate" from="0 130 130" to="360 130 130" dur="12s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="130" cy="130" r="88" fill="none" stroke="rgba(0,229,255,0.12)" stroke-width="1"/>
+            <circle cx="130" cy="130" r="88" fill="none" stroke="rgba(0,229,255,0.35)" stroke-width="1" stroke-dasharray="3 18">
+              <animateTransform attributeName="transform" type="rotate" from="360 130 130" to="0 130 130" dur="8s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="130" cy="130" r="55" fill="rgba(255,60,92,0.03)" stroke="rgba(255,60,92,0.2)" stroke-width="1"/>
+          </svg>
+        </div>
+        <div class="ctf-lock-center">
+          <div class="ctf-lock-icon" id="ctf-lock-icon">🔐</div>
+          <div class="ctf-lock-status" id="ctf-lock-status">LOCKED</div>
+          <div class="ctf-lock-sub">access denied</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- UNLOCKED CONTACT — hidden until CTF solved -->
+  <div id="ctf-unlocked" class="contact-inner" style="display:none;">
+    <div>
+      <!-- success banner -->
+      <div class="ctf-success-banner">
+        <span class="ctf-success-icon">🎉</span>
+        <div>
+          <div class="ctf-success-title">Access Granted — Flag Correct!</div>
+          <div class="ctf-success-sub">You found the hidden flag in the page source. Nice work, hacker.</div>
+        </div>
+      </div>
+
+      <div class="contact-tagline" style="margin-top:2rem;">Open to <span class="hl">Security Roles</span> &amp; Collaborations</div>
+      <p class="contact-desc">Whether you're looking for a security researcher, a VAPT specialist, or a cybersecurity engineer who bridges operations and offence — I'd love to hear from you.</p>
+
+      <div class="contact-links">
+        <!-- EMAIL -->
+        <a href="https://mail.google.com/mail/?view=cm&fs=1&to=jeffryjosephoffcial@gmail.com&su=Hello%20Jeffry%20Joseph"
+           target="_blank" rel="noopener noreferrer" class="contact-link">
+          <span class="contact-link-icon">✉️</span>
+          <div>
+            <div class="contact-link-label">Email</div>
+            <div class="contact-link-value">jeffryjosephoffcial@gmail.com</div>
+          </div>
+        </a>
+        <!-- LINKEDIN -->
+        <a href="https://www.linkedin.com/in/jeffry-joseph-offcial/"
+           target="_blank" rel="noopener noreferrer" class="contact-link"
+           onmouseenter="this.style.borderColor='#0a66c2';this.style.background='rgba(10,102,194,0.07)'"
+           onmouseleave="this.style.borderColor='';this.style.background=''">
+          <span class="linkedin-svg-wrap">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22">
+              <rect width="24" height="24" rx="4" fill="#0a66c2"/>
+              <path d="M7.2 9.6H4.8V19.2H7.2V9.6ZM6 8.4a1.4 1.4 0 1 0 0-2.8 1.4 1.4 0 0 0 0 2.8ZM19.2 19.2h-2.4v-4.8c0-1.14-.86-2-2-2s-2 .86-2 2v4.8H10.4V9.6h2.4v1.1c.6-.84 1.6-1.5 2.8-1.5 2.1 0 3.6 1.6 3.6 3.8v6.2Z" fill="#fff"/>
+            </svg>
+          </span>
+          <div>
+            <div class="contact-link-label">LinkedIn</div>
+            <div class="contact-link-value">linkedin.com/in/jeffry-joseph-offcial</div>
+          </div>
+        </a>
+        <!-- LOCATION -->
+        <div class="contact-link" style="cursor:default;">
+          <span class="contact-link-icon">📍</span>
+          <div>
+            <div class="contact-link-label">Location</div>
+            <div class="contact-link-value">Kochi, Kerala, India</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- keep the spinning ring on success too -->
+    <div style="display:flex;align-items:center;justify-content:center;">
+      <div class="security-ring">
+        <svg class="ring-svg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="150" cy="150" r="130" fill="none" stroke="rgba(0,229,255,0.08)" stroke-width="1"/>
+          <circle cx="150" cy="150" r="130" fill="none" stroke="rgba(0,229,255,0.4)" stroke-width="1" stroke-dasharray="8 12"/>
+          <circle cx="150" cy="150" r="100" fill="none" stroke="rgba(255,60,92,0.15)" stroke-width="1"/>
+          <circle cx="150" cy="150" r="100" fill="none" stroke="rgba(255,60,92,0.3)" stroke-width="1" stroke-dasharray="4 20"/>
+          <circle cx="150" cy="150" r="70" fill="rgba(0,229,255,0.03)" stroke="rgba(0,229,255,0.2)" stroke-width="1"/>
+          <circle cx="280" cy="150" r="4" fill="var(--accent)"/>
+          <circle cx="150" cy="20" r="4" fill="var(--accent2)"/>
+          <circle cx="20" cy="150" r="4" fill="var(--accent3)"/>
+          <circle cx="150" cy="280" r="4" fill="var(--accent)"/>
+          <text x="150" y="14" text-anchor="middle" font-family="'Share Tech Mono',monospace" font-size="8" fill="rgba(0,229,255,0.6)">VAPT</text>
+          <text x="288" y="153" text-anchor="start" font-family="'Share Tech Mono',monospace" font-size="8" fill="rgba(0,229,255,0.6)">OSINT</text>
+          <text x="150" y="295" text-anchor="middle" font-family="'Share Tech Mono',monospace" font-size="8" fill="rgba(0,229,255,0.6)">SIEM</text>
+          <text x="12" y="153" text-anchor="end" font-family="'Share Tech Mono',monospace" font-size="8" fill="rgba(0,229,255,0.6)">DFIR</text>
+        </svg>
+        <div class="ring-center">
+          <div class="ring-icon">🔓</div>
+          <div class="ring-text">Access Granted<br/>Kochi, India</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<footer>
+  Built by <span>Jeffry Joseph</span> &nbsp;·&nbsp; Security Researcher &nbsp;·&nbsp; Kochi, Kerala &nbsp;·&nbsp; <span>2025</span>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+/* ══════════════════════════════════════════
+   CURSOR
+══════════════════════════════════════════ */
+const cursor = document.getElementById('cursor');
+const ring   = document.getElementById('cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cursor.style.left=mx+'px';cursor.style.top=my+'px';});
+function animRing(){rx+=(mx-rx)*0.12;ry+=(my-ry)*0.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing);}
+animRing();
+document.querySelectorAll('a,button,.skill-tag,.badge,.cert-item,#termTrigger').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cursor.style.transform='translate(-50%,-50%) scale(2)';ring.style.transform='translate(-50%,-50%) scale(1.5)';});
+  el.addEventListener('mouseleave',()=>{cursor.style.transform='translate(-50%,-50%) scale(1)';ring.style.transform='translate(-50%,-50%) scale(1)';});
+});
+
+/* ══════════════════════════════════════════
+   SCROLL REVEAL
+══════════════════════════════════════════ */
+const obs = new IntersectionObserver(entries=>{
+  entries.forEach((e,i)=>{if(e.isIntersecting){e.target.style.transitionDelay=(i*0.08)+'s';e.target.classList.add('visible');}});
+},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+/* ══════════════════════════════════════════
+   ACTIVE NAV
+══════════════════════════════════════════ */
+const sections = document.querySelectorAll('section[id]');
+const navLinks  = document.querySelectorAll('.nav-links a');
+window.addEventListener('scroll',()=>{
+  let cur='';
+  sections.forEach(s=>{if(window.scrollY>=s.offsetTop-200)cur=s.id;});
+  navLinks.forEach(a=>{a.style.color=a.getAttribute('href')==='#'+cur?'var(--accent)':'';});
+});
+
+/* ══════════════════════════════════════════
+   INTERACTIVE TERMINAL ENGINE
+══════════════════════════════════════════ */
+const overlay   = document.getElementById('termOverlay');
+const output    = document.getElementById('termOutput');
+const input     = document.getElementById('termInput');
+const trigger   = document.getElementById('termTrigger');
+const closeBtn  = document.getElementById('termCloseBtnText');
+const closeDot  = document.getElementById('termCloseBtn');
+
+let history = [];
+let histIdx  = -1;
+let firstOpen = true;
+
+/* ── profile data ── */
+const PROFILE = {
+  name:     'Jeffry Joseph',
+  role:     'Security Researcher / VAPT Specialist',
+  exp:      '3+ years',
+  location: 'Kochi, Kerala, India',
+  edu:      'MSc Cybersecurity — National Forensic Sciences University',
+  email:    'jeffryjosephoffcial@gmail.com',
+  linkedin: 'linkedin.com/in/jeffry-joseph-offcial',
+  certs:    ['ITIL V4 Foundation','Fundamentals of Deep Learning','UGC-NET Qualified'],
+  langs:    ['English','Hindi','Malayalam'],
+  teams:    ['Red Team','Blue Team'],
+  tools:    ['Burp Suite','Nmap','Metasploit','Wireshark','OWASP ZAP','Wazuh','Spiderfoot','Maltego'],
+  os:       ['Kali Linux','Windows','Linux'],
+  skills:   ['VAPT','Incident Response','DevSecOps','Digital Forensics','OSINT','Malware Analysis','SIEM','Active Directory'],
+};
+
+/* ── ASCII banner ── */
+const BANNER =
+`  ██╗███████╗███████╗███████╗██████╗ ██╗   ██╗
+  ██║██╔════╝██╔════╝██╔════╝██╔══██╗╚██╗ ██╔╝
+  ██║█████╗  █████╗  █████╗  ██████╔╝ ╚████╔╝ 
+  ██║██╔══╝  ██╔══╝  ██╔══╝  ██╔══██╗  ╚██╔╝  
+  ██║██║     ██║     ███████╗██║  ██║   ██║   
+  ╚═╝╚═╝     ╚═╝     ╚══════╝╚═╝  ╚═╝   ╚═╝   `;
+
+/* ── helpers ── */
+function line(html, cls=''){
+  const d = document.createElement('div');
+  d.className = 'to-line to-animate ' + cls;
+  d.innerHTML = html;
+  output.appendChild(d);
+  output.scrollTop = output.scrollHeight;
+}
+function blank(){ line('&nbsp;'); }
+function sep(){
+  line('<span class="to-bar">────────────────────────────────────────────────────────</span>');
+}
+function typed(cmd, cb, delay=600){
+  // echo the command then call cb after short delay
+  line(`<span class="to-prompt">jeffry@kali:~$</span> <span class="to-cmd">${cmd}</span>`);
+  setTimeout(()=>{cb(); output.scrollTop=output.scrollHeight;}, delay);
+}
+function printWait(lines, baseDelay=60, done){
+  lines.forEach((l,i)=>{
+    setTimeout(()=>{
+      line(l);
+      if(i===lines.length-1 && done) setTimeout(done,120);
+    }, i*baseDelay);
+  });
+}
+
+/* ── command responses ── */
+function cmdWhoami(){
+  const ls = [
+    `<span class="to-bar">────────────────────────────────────────────────────</span>`,
+    `<span class="to-green">  ██╗███████╗███████╗███████╗██████╗ ██╗   ██╗</span>`,
+    `<span class="to-green">  ██║██╔════╝██╔════╝██╔════╝██╔══██╗╚██╗ ██╔╝</span>`,
+    `<span class="to-green">  ██║█████╗  █████╗  █████╗  ██████╔╝ ╚████╔╝ </span>`,
+    `<span class="to-green">  ██║██╔══╝  ██╔══╝  ██╔══╝  ██╔══██╗  ╚██╔╝  </span>`,
+    `<span class="to-green">  ██║██║     ██║     ███████╗██║  ██║   ██║   </span>`,
+    `<span class="to-green">  ╚═╝╚═╝     ╚═╝     ╚══════╝╚═╝  ╚═╝   ╚═╝   </span>`,
+    `<span class="to-bar">────────────────────────────────────────────────────</span>`,
+    `&nbsp;`,
+    `<span class="to-key">  Name:</span>       <span class="to-val">Jeffry Joseph</span>`,
+    `<span class="to-key">  Role:</span>       <span class="to-cyan">Security Researcher &amp; VAPT Specialist</span>`,
+    `<span class="to-key">  Experience:</span> <span class="to-val">3+ years</span>`,
+    `<span class="to-key">  Education:</span>  <span class="to-val">MSc Cybersecurity — NFSU, Gujarat</span>`,
+    `&nbsp;`,
+    `<span class="to-key">  Red Team:</span>   <span class="to-red">VAPT · Burp Suite · Metasploit · OWASP Top 10</span>`,
+    `<span class="to-key">  Blue Team:</span>  <span class="to-cyan">Wazuh SIEM · DFIR · DevSecOps · Incident Response</span>`,
+    `<span class="to-key">  Certs:</span>      <span class="to-val">ITIL V4 · UGC-NET Qualified</span>`,
+    `&nbsp;`,
+    `<span class="to-key">  Location:</span>   <span class="to-val">Kochi, Kerala, India 🌍</span>`,
+    `<span class="to-key">  Status:</span>     <span class="to-green">● Open to Security Roles &amp; Collaborations</span>`,
+    `&nbsp;`,
+    `<span class="to-bar">────────────────────────────────────────────────────</span>`,
+    `<span class="to-hint">  Type <span class="to-help-cmd">contact</span> for email &amp; LinkedIn · <span class="to-help-cmd">nmap jeffry</span> for a full scan</span>`,
+  ];
+  printWait(ls, 45);
+}
+
+function cmdProfile(){
+  const ls = [
+    `<span class="to-comment">{</span>`,
+    `&nbsp;&nbsp;<span class="to-key">"name":</span>     <span class="to-val">"${PROFILE.name}"</span>,`,
+    `&nbsp;&nbsp;<span class="to-key">"role":</span>     <span class="to-val">"${PROFILE.role}"</span>,`,
+    `&nbsp;&nbsp;<span class="to-key">"experience":</span><span class="to-val">"${PROFILE.exp}"</span>,`,
+    `&nbsp;&nbsp;<span class="to-key">"location":</span> <span class="to-val">"${PROFILE.location}"</span>,`,
+    `&nbsp;&nbsp;<span class="to-key">"education":</span><span class="to-val">"${PROFILE.edu}"</span>,`,
+    `&nbsp;&nbsp;<span class="to-key">"teams":</span>    [<span class="to-val">"${PROFILE.teams.join('", "')}"</span>],`,
+    `&nbsp;&nbsp;<span class="to-key">"email":</span>    <span class="to-val">"${PROFILE.email}"</span>`,
+    `<span class="to-comment">}</span>`,
+  ];
+  printWait(ls, 55);
+}
+
+function cmdNmap(target){
+  const displayTarget = target || 'jeffry-joseph.local';
+  const ls = [
+    `<span class="to-comment">Starting Nmap 7.95 ( https://nmap.org )</span>`,
+    `<span class="to-comment">Nmap scan report for <span class="to-cyan">${displayTarget}</span></span>`,
+    `<span class="to-comment">Host is up (0.0012s latency).</span>`,
+    `&nbsp;`,
+    `<span class="to-section">PORT / SERVICE / STATE</span>`,
+    `<span class="to-bar">──────────────────────────────────────</span>`,
+    `<span class="to-green">OPEN</span>  <span class="to-key">22/tcp</span>  <span class="to-val">SSH — Remote Access</span>`,
+    `<span class="to-green">OPEN</span>  <span class="to-key">80/tcp</span>  <span class="to-val">HTTP — Portfolio (you're here)</span>`,
+    `<span class="to-green">OPEN</span>  <span class="to-key">443/tcp</span> <span class="to-val">HTTPS — Secure Comms</span>`,
+    `<span class="to-red">CLOSED</span> <span class="to-key">4444/tcp</span><span class="to-val">Metasploit — not for you 😄</span>`,
+    `&nbsp;`,
+    `<span class="to-section">VULN SCANNER — NSE SCRIPTS</span>`,
+    `<span class="to-bar">──────────────────────────────────────</span>`,
+    `<span class="to-key">OS Detection:</span>       <span class="to-val">Kali Linux 2024 / Windows 11</span>`,
+    `<span class="to-key">Open Ports Found:</span>   <span class="to-val">4 backdoors discovered (at DISPROTECH)</span>`,
+    `<span class="to-key">CVEs Identified:</span>    <span class="to-val">7+ critical vulns reported & patched</span>`,
+    `<span class="to-key">Frameworks Loaded:</span>  <span class="to-val">ITIL V4 · ISO 27001 · NIST · OWASP</span>`,
+    `<span class="to-key">Exploit Modules:</span>    <span class="to-val">Burp Suite · Metasploit · SQLMAP</span>`,
+    `<span class="to-key">Firewall Status:</span>    <span class="to-green">ACTIVE</span> — DevSecOps pipeline hardened`,
+    `&nbsp;`,
+    `<span class="to-section">HOST DETAILS</span>`,
+    `<span class="to-bar">──────────────────────────────────────</span>`,
+    `<span class="to-key">Location:</span>  <span class="to-val">${PROFILE.location}</span>`,
+    `<span class="to-key">Education:</span> <span class="to-val">${PROFILE.edu}</span>`,
+    `<span class="to-key">Certs:</span>     <span class="to-val">${PROFILE.certs.join(' · ')}</span>`,
+    `<span class="to-key">Languages:</span> <span class="to-val">${PROFILE.langs.join(', ')}</span>`,
+    `&nbsp;`,
+    `<span class="to-comment">Nmap done: 1 IP address (1 host up) scanned in 2.31 seconds</span>`,
+  ];
+  printWait(ls, 60);
+}
+
+function cmdSkills(){
+  const ls = [
+    `<span class="to-section">VAPT &amp; PENTESTING</span>`,
+    `  ${PROFILE.tools.map(t=>`<span class="to-green">${t}</span>`).join('  ')}`,
+    `<span class="to-section">CORE SKILLS</span>`,
+    `  ${PROFILE.skills.map(s=>`<span class="to-cyan">${s}</span>`).join('  ')}`,
+    `<span class="to-section">OPERATING SYSTEMS</span>`,
+    `  ${PROFILE.os.map(o=>`<span class="to-val">${o}</span>`).join('  ')}`,
+  ];
+  printWait(ls, 70);
+}
+
+function cmdContact(){
+  const ls = [
+    `<span class="to-section">CONTACT INFORMATION</span>`,
+    `<span class="to-bar">──────────────────────────────────────</span>`,
+    `<span class="to-key">Name:</span>     <span class="to-val">Jeffry Joseph</span>`,
+    `<span class="to-key">Role:</span>     <span class="to-val">Security Researcher &amp; VAPT Specialist</span>`,
+    `<span class="to-key">Email:</span>    <a href="https://mail.google.com/mail/?view=cm&fs=1&to=jeffryjosephoffcial@gmail.com&su=Hello%20Jeffry%20Joseph" target="_blank" rel="noopener noreferrer" class="term-link" style="cursor:pointer;">jeffryjosephoffcial@gmail.com</a>`,
+    `<span class="to-key">LinkedIn:</span> <a href="https://www.linkedin.com/in/jeffry-joseph-offcial/" target="_blank" rel="noopener noreferrer" class="term-link li" style="cursor:pointer;">linkedin.com/in/jeffry-joseph-offcial</a>`,
+    `<span class="to-key">Location:</span> <span class="to-val">Kochi, Kerala, India</span>`,
+    `<span class="to-key">Status:</span>   <span class="to-green">Open to Security Roles &amp; Collaborations</span>`,
+    `<span class="to-bar">──────────────────────────────────────</span>`,
+    `<span class="to-hint">↳ Click email or LinkedIn above to connect directly</span>`,
+  ];
+  printWait(ls, 60);
+}
+
+function cmdProjects(){
+  const ls = [
+    `<span class="to-section">[ BLUE TEAM ]</span>`,
+    `  <span class="to-cyan">01</span> Buskill-Inspired Anti-Theft &amp; AES-256-GCM Encryption System <span class="to-dim">Jul–Aug 2025</span>`,
+    `  <span class="to-cyan">02</span> Automated DevSecOps Security Suite — Jenkins CI/CD Pipeline  <span class="to-dim">Feb–May 2025</span>`,
+    `<span class="to-section">[ AI / ML ]</span>`,
+    `  <span class="to-green">03</span> Sexual Predator Classification Model (NB · RF · SVM)         <span class="to-dim">Feb–May 2025</span>`,
+    `<span class="to-section">[ RED TEAM ]</span>`,
+    `  <span class="to-red">04</span> Flipper Zero Alternative — M5StickCPlus2 + Bruce Firmware    <span class="to-dim">Jun–Dec 2024</span>`,
+  ];
+  printWait(ls, 70);
+}
+
+function cmdHelp(){
+  const ls = [
+    `<span class="to-comment">Available commands:</span>`,
+    `&nbsp;`,
+    `  <span class="to-help-cmd">whoami</span>              — identify the current user`,
+    `  <span class="to-help-cmd">cat profile.json</span>    — full JSON profile dump`,
+    `  <span class="to-help-cmd">nmap jeffry</span>         — run a mock port/vuln scan`,
+    `  <span class="to-help-cmd">nmap &lt;any target&gt;</span>    — scan with custom target name`,
+    `  <span class="to-help-cmd">skills</span>              — list technical arsenal`,
+    `  <span class="to-help-cmd">projects</span>            — list built projects`,
+    `  <span class="to-help-cmd">contact</span>             — display contact info with links`,
+    `  <span class="to-help-cmd">clear</span>               — clear the terminal`,
+    `  <span class="to-help-cmd">help</span>                — show this menu`,
+    `  <span class="to-help-cmd">exit</span>                — close the terminal`,
+    `&nbsp;`,
+    `<span class="to-bar">──────────────────────────────────────</span>`,
+    `<span class="to-comment">🚩 CTF MODE:</span> <span class="to-hint">Contact info is locked on the main page.</span>`,
+    `<span class="to-hint">   Right-click → View Page Source → search for</span> <span class="to-help-cmd">flag</span>`,
+    `<span class="to-hint">   Enter the flag to unlock the contact section.</span>`,
+    `<span class="to-bar">──────────────────────────────────────</span>`,
+    `&nbsp;`,
+    `<span class="to-hint">Pro tip: use ↑ / ↓ to navigate history · Tab to autocomplete</span>`,
+  ];
+  printWait(ls, 40);
+}
+
+function cmdUnknown(cmd){
+  line(`<span class="to-err">bash: ${cmd}: command not found</span>`);
+  line(`<span class="to-hint">Type <span class="to-help-cmd">help</span> to see available commands.</span>`);
+}
+
+/* ── boot sequence ── */
+function bootSequence(){
+  output.innerHTML = '';
+
+  const wrap = document.createElement('div');
+  wrap.id = 'termWelcome';
+  wrap.style.cssText = `
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 300px;
+    text-align: center;
+    padding: 2.5rem 2rem;
+    gap: 1.4rem;
+  `;
+
+  wrap.innerHTML = `
+    <style>
+      @keyframes fadeWelcome { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+      @keyframes cursorBlink  { 0%,100%{opacity:1} 50%{opacity:0} }
+      @keyframes glowPulse    { 0%,100%{text-shadow:0 0 8px rgba(0,229,255,0.3)} 50%{text-shadow:0 0 20px rgba(0,229,255,0.7)} }
+      #termWelcome { animation: fadeWelcome 0.45s ease forwards; }
+      .wc-icon  { font-size: 2.6rem; line-height: 1; }
+      .wc-label {
+        font-family: var(--mono); font-size: 0.65rem;
+        color: var(--muted); letter-spacing: 0.22em; text-transform: uppercase;
+      }
+      .wc-divider {
+        width: 200px; height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(0,229,255,0.25), transparent);
+      }
+      .wc-msg {
+        font-family: var(--mono); font-size: 0.95rem;
+        color: var(--muted); line-height: 2;
+      }
+      .wc-msg .wc-c  { color: var(--accent3); animation: glowPulse 2.5s ease-in-out infinite; }
+      .wc-msg .wc-n  { color: var(--accent);  animation: glowPulse 2.5s ease-in-out infinite 0.4s; }
+      .wc-msg .wc-name { color: var(--text); font-size: 1.05rem; }
+      .wc-hint {
+        font-family: var(--mono); font-size: 0.68rem;
+        color: #3a5266; line-height: 1.9;
+      }
+      .wc-hint .wc-hl { color: var(--accent); opacity: 0.7; }
+      .wc-cursor {
+        display: inline-block; width: 9px; height: 1.1em;
+        background: var(--accent3); vertical-align: middle; margin-left: 5px;
+        animation: cursorBlink 1s step-end infinite;
+        border-radius: 1px;
+      }
+    </style>
+
+    <div class="wc-icon">🔒</div>
+    <div class="wc-label">jeffry@kali — interactive shell</div>
+    <div class="wc-divider"></div>
+
+    <div class="wc-msg">
+      Type &nbsp;<span class="wc-c">whoami</span>&nbsp; or run an &nbsp;<span class="wc-n">nmap</span>&nbsp; scan<br/>
+      to know about &nbsp;<span class="wc-name">Jeffry Joseph</span><span class="wc-cursor"></span>
+    </div>
+
+    <div class="wc-divider"></div>
+
+    <div class="wc-hint">
+      <span class="wc-hl">whoami</span> &nbsp;·&nbsp; <span class="wc-hl">nmap jeffry</span> &nbsp;·&nbsp; <span class="wc-hl">cat profile.json</span> &nbsp;·&nbsp; <span class="wc-hl">help</span>
+    </div>
+  `;
+
+  output.appendChild(wrap);
+}
+
+/* remove welcome screen on first command */
+function clearWelcome(){
+  const w = document.getElementById('termWelcome');
+  if(w) w.remove();
+}
+
+/* ── open / close ── */
+function openTerminal(){
+  overlay.classList.add('open');
+  document.body.style.overflow='hidden';
+  if(firstOpen){ firstOpen=false; bootSequence(); }
+  setTimeout(()=>input.focus(),350);
+}
+function closeTerminal(){
+  overlay.classList.remove('open');
+  document.body.style.overflow='';
+}
+
+trigger.addEventListener('click', openTerminal);
+closeBtn.addEventListener('click', closeTerminal);
+closeDot.addEventListener('click', closeTerminal);
+overlay.addEventListener('click', e=>{ if(e.target===overlay) closeTerminal(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeTerminal(); });
+
+/* ── command processor ── */
+function processCommand(raw){
+  const cmd = raw.trim().toLowerCase();
+  if(!cmd) return;
+
+  // push to history
+  history.unshift(raw.trim());
+  histIdx = -1;
+
+  // remove welcome screen on first real command
+  clearWelcome();
+
+  // echo user input
+  line(`<span class="to-prompt">jeffry@kali:~$</span> <span class="to-cmd">${raw.trim()}</span>`);
+  blank();
+
+  if(cmd==='whoami'){
+    cmdWhoami();
+  } else if(cmd==='cat profile.json' || cmd==='cat profile'){
+    cmdProfile();
+  } else if(cmd.startsWith('nmap')){
+    const parts = raw.trim().split(/\s+/);
+    const target = parts.slice(1).join(' ') || 'jeffry-joseph.local';
+    cmdNmap(target);
+  } else if(cmd==='skills' || cmd==='ls skills'){
+    cmdSkills();
+  } else if(cmd==='projects' || cmd==='ls projects'){
+    cmdProjects();
+  } else if(cmd==='contact'){
+    cmdContact();
+  } else if(cmd==='help' || cmd==='?'){
+    cmdHelp();
+  } else if(cmd==='clear' || cmd==='cls'){
+    output.innerHTML='';
+    bootSequence();
+    return;
+  } else if(cmd==='exit' || cmd==='quit'){
+    line(`<span class="to-comment">Closing session… goodbye.</span>`);
+    setTimeout(closeTerminal, 700);
+  } else {
+    cmdUnknown(raw.trim());
+  }
+  blank();
+}
+
+/* ── input handling ── */
+input.addEventListener('keydown', e=>{
+  if(e.key==='Enter'){
+    const val = input.value;
+    input.value='';
+    processCommand(val);
+  } else if(e.key==='ArrowUp'){
+    e.preventDefault();
+    if(histIdx < history.length-1){ histIdx++; input.value=history[histIdx]; }
+  } else if(e.key==='ArrowDown'){
+    e.preventDefault();
+    if(histIdx > 0){ histIdx--; input.value=history[histIdx]; }
+    else if(histIdx===0){ histIdx=-1; input.value=''; }
+  } else if(e.key==='Tab'){
+    e.preventDefault();
+    // basic tab complete
+    const cmds=['whoami','cat profile.json','nmap jeffry','skills','projects','contact','help','clear','exit'];
+    const match=cmds.find(c=>c.startsWith(input.value.toLowerCase()));
+       if(match) input.value=match;
+  }
+});
+
+// keep input focused when clicking inside the terminal window
+document.getElementById('termWindow').addEventListener('click',()=>input.focus());
+
+/* ══════════════════════════════════════════
+   CTF UNLOCK LOGIC
+══════════════════════════════════════════ */
+(function(){
+  const CORRECT   = 's0urc3_c0d3_1s_y0ur_fr13nd';
+  const submitBtn = document.getElementById('ctf-submit');
+  const ctfInput  = document.getElementById('ctf-input');
+  const feedback  = document.getElementById('ctf-feedback');
+  const locked    = document.getElementById('ctf-locked');
+  const unlocked  = document.getElementById('ctf-unlocked');
+  const lockIcon  = document.getElementById('ctf-lock-icon');
+  const lockStatus= document.getElementById('ctf-lock-status');
+  const lockSub   = document.querySelector('.ctf-lock-sub');
+  let attempts = 0;
+
+  function attempt(){
+    const val = ctfInput.value.trim().toLowerCase();
+    const stripped = val.replace(/^flag\{/,'').replace(/\}$/,'');
+    if(stripped === CORRECT){
+      feedback.className = 'ctf-feedback ok';
+      feedback.textContent = '✓ Flag accepted! Decrypting contact data…';
+      lockIcon.textContent = '🔓';
+      lockIcon.classList.add('unlock-anim');
+      lockStatus.textContent = 'UNLOCKED';
+      lockStatus.style.color = 'var(--accent3)';
+      if(lockSub) lockSub.textContent = 'access granted';
+      setTimeout(()=>{
+        locked.style.transition = 'opacity 0.5s ease';
+        locked.style.opacity = '0';
+        setTimeout(()=>{
+          locked.style.display = 'none';
+          unlocked.style.display = 'grid';
+          unlocked.style.opacity = '0';
+          unlocked.style.transition = 'opacity 0.6s ease';
+          requestAnimationFrame(()=>{
+            unlocked.style.opacity = '1';
+            const els = unlocked.querySelectorAll('.ctf-success-banner,.contact-tagline,.contact-desc,.contact-link');
+            els.forEach((el,i)=>{
+              el.style.opacity='0'; el.style.transform='translateY(18px)';
+              el.style.transition='opacity 0.5s ease, transform 0.5s ease';
+              setTimeout(()=>{ el.style.opacity='1'; el.style.transform='translateY(0)'; }, 200 + i*90);
+            });
+          });
+        }, 520);
+      }, 850);
+    } else {
+      attempts++;
+      ctfInput.classList.add('ctf-shake');
+      setTimeout(()=>ctfInput.classList.remove('ctf-shake'), 420);
+      const msgs = [
+        '✗ Access denied. The answer is closer than you think.',
+        '✗ Wrong. Hint: right-click anywhere → View Page Source.',
+        '✗ Nope. In the source, press Ctrl+F and search for "flag".',
+        '✗ Almost! The flag is inside an HTML comment: flag{...}',
+        '✗ Still wrong. Copy the full value inside flag{...} from the source.',
+      ];
+      feedback.className = 'ctf-feedback err';
+      feedback.textContent = msgs[Math.min(attempts-1, msgs.length-1)];
+    }
+  }
+
+  if(submitBtn) submitBtn.addEventListener('click', attempt);
+  if(ctfInput)  ctfInput.addEventListener('keydown', e=>{ if(e.key==='Enter') attempt(); });
+
+  // cursor hover for CTF elements
+  [submitBtn, ctfInput].forEach(el=>{
+    if(!el) return;
+    el.addEventListener('mouseenter',()=>{ cursor.style.transform='translate(-50%,-50%) scale(2)'; ring.style.transform='translate(-50%,-50%) scale(1.5)'; });
+    el.addEventListener('mouseleave',()=>{ cursor.style.transform='translate(-50%,-50%) scale(1)'; ring.style.transform='translate(-50%,-50%) scale(1)'; });
+  });
+})();
+</script>
+</body>
+</html>
