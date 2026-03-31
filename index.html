@@ -516,6 +516,93 @@
     .term-window { max-height: 95vh; }
     .to-banner { font-size: 0.55rem; }
   }
+  /* =========================
+   MOBILE RESPONSIVE FIX
+========================= */
+@media (max-width: 768px) {
+
+  body {
+    cursor: auto; /* restore for mobile */
+  }
+
+  /* NAVBAR */
+  nav {
+    padding: 1rem 1.5rem;
+  }
+
+  .nav-links {
+    display: none; /* or convert to hamburger later */
+  }
+
+  /* HERO */
+  #hero {
+    padding: 6rem 1.5rem 2rem;
+    text-align: center;
+  }
+
+  .hero-name {
+    font-size: 2.5rem;
+  }
+
+  .hero-desc {
+    font-size: 0.95rem;
+  }
+
+  .hero-cta {
+    justify-content: center;
+  }
+
+  /* FIX OVERLAP */
+  .hero-stats {
+    position: static;
+    flex-direction: row;
+    justify-content: center;
+    margin-top: 2rem;
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  /* SECTIONS */
+  section {
+    padding: 3rem 1.5rem;
+  }
+
+  /* GRIDS → STACK */
+  .about-grid,
+  .contact-inner,
+  .edu-cert-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  /* PROJECT GRID */
+  .projects-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* SKILLS GRID */
+  .skills-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* EXPERIENCE CARD */
+  .exp-card {
+    padding: 1.5rem;
+  }
+
+  /* CONTACT LINKS */
+  .contact-link {
+    padding: 1rem;
+  }
+
+  /* TERMINAL */
+  .term-window {
+    width: 95vw;
+    height: 85vh;
+  }
+}
 
 </style>
 </head>
